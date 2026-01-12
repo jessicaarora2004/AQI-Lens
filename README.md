@@ -1,6 +1,8 @@
 # AQI Lens
 
 AQI Lens is a health-focused web app that helps users monitor air quality (AQI) in real time and understand pollution sources.
+![AQI Lens Screenshot](assets/screenshot.png)
+
 
 ## Features
 - Real-time AQI data
