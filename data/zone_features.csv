@@ -1,0 +1,5 @@
+zone_id,pm25,night_light,ndvi,fire_count,thermal_anomaly,road_density
+Central_Delhi,280,85,0.18,2,0.65,0.82
+South_Delhi,210,72,0.32,1,0.40,0.70
+East_Delhi,250,78,0.22,3,0.55,0.75
+North_Delhi,300,90,0.15,6,0.60,0.88

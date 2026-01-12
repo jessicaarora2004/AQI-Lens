@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Delhi Pollution Map</title>
+  <meta charset="utf-8" />
+
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body { margin: 0; }
+    #map { height: 100vh; }
+    .legend {
+      line-height: 18px;
+      color: #555;
+      background: white;
+      padding: 6px 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+    .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script>
+  const API_URL = "http://127.0.0.1:8000/get_zone_info";
+
+  const zones = [
+    { name: "Anand Vihar", lat: 28.6508, lon: 77.3152 },
+    { name: "Rohini", lat: 28.7497, lon: 77.0561 },
+    { name: "Dwarka", lat: 28.5921, lon: 77.0460 },
+    { name: "Saket", lat: 28.5245, lon: 77.2066 },
+    { name: "Karol Bagh", lat: 28.6522, lon: 77.2060 },
+    { name: "Punjabi Bagh", lat: 28.6583, lon: 77.1406 },
+    { name: "Mayur Vihar", lat: 28.5990, lon: 77.3030 },
+    { name: "Janakpuri", lat: 28.6390, lon: 77.1000 },
+    { name: "Vasant Kunj", lat: 28.5248, lon: 77.1665 },
+    { name: "Nizamuddin", lat: 28.5960, lon: 77.2500 },
+    { name: "Lajpat Nagar", lat: 28.5675, lon: 77.2405 },
+    { name: "Connaught Place", lat: 28.6323, lon: 77.2197 }
+  ];
+
+  const map = L.map("map").setView([28.6139, 77.2090], 11);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+  function getColor(pm25) {
+    if (pm25 <= 50) return "green";
+    if (pm25 <= 100) return "yellow";
+    if (pm25 <= 200) return "orange";
+    if (pm25 <= 300) return "red";
+    return "purple";
+  }
+
+  zones.forEach(zone => {
+    fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zone_id: zone.name })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const marker = L.circleMarker([zone.lat, zone.lon], {
+        radius: 14,
+        fillColor: getColor(data.pm25),
+        color: "#000",
+        fillOpacity: 0.9
+      }).addTo(map);
+
+      // Popup on click
+      marker.bindPopup(`
+        <b>${data.zone_id}</b><br>
+        PM2.5: ${data.pm25}<br>
+        Source: ${data.primary_source}<br>
+        Recommendation: ${data.recommendation}
+      `);
+
+      // Tooltip on hover
+      marker.bindTooltip(`PM2.5: ${data.pm25}`, {permanent:false, direction:"top"});
+    });
+  });
+
+  // Add legend
+  const legend = L.control({position: 'bottomright'});
+  legend.onAdd = function(map) {
+    const div = L.DomUtil.create('div', 'legend');
+    const grades = [0, 51, 101, 201, 301];
+    const colors = ["green", "yellow", "orange", "red", "purple"];
+    let labels = [];
+    for (let i = 0; i < grades.length; i++) {
+      div.innerHTML +=
+        '<i style="background:' + colors[i] + '"></i> ' +
+        grades[i] + (grades[i+1] ? '&ndash;' + (grades[i+1]-1) + '<br>' : '+');
+    }
+    return div;
+  };
+  legend.addTo(map);
+</script>
+
+</body>
+</html>
